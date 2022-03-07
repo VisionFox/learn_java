@@ -1530,12 +1530,106 @@ public class Solution {
 
         for (int p : pushed) {
             stack.push(p);
-            while (!stack.isEmpty()&&stack.peek()==popped[i]){
+            while (!stack.isEmpty() && stack.peek() == popped[i]) {
                 stack.pop();
                 i++;
             }
         }
 
         return stack.isEmpty();
+    }
+
+    public String removeKdigits(String nums, int k) {
+        Stack<Integer> stack = new Stack<>();
+        for (int i = 0; i < nums.length(); i++) {
+            int num = nums.charAt(i) - '0';
+            // 是while 循环
+            while (k > 0 && !stack.isEmpty() && stack.peek() > num) {
+                stack.pop();
+                k--;
+            }
+            stack.push(num);
+        }
+
+        while (k > 0 && !stack.isEmpty()) {
+            stack.pop();
+            k--;
+        }
+
+        if (stack.isEmpty()) {
+            return "0";
+        }
+
+        String ans = "";
+        // 记得顺序
+        // 记得跳过无效的高位0
+        Integer[] l = stack.toArray(new Integer[stack.size()]);
+        boolean leadingZero = true;
+        for (int n : l) {
+            if (leadingZero && n == 0) {
+                continue;
+            }
+            leadingZero = false;
+            ans += n;
+        }
+
+        if (ans == "") {
+            return "0";
+        }
+        return ans;
+    }
+
+    public String smallestSubsequence(String s) {
+        boolean[] existStack = new boolean[26];
+        int[] charCnt = new int[26];
+        for (int i = 0; i < s.length(); i++) {
+            charCnt[s.charAt(i) - 'a']++;
+        }
+
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            // stack 中没有的char可以 尝试 加进来 (标记唯一性)
+            if (!existStack[ch - 'a']) {
+                // 尝试保持单调递增 - 维持单调递增
+                while (sb.length() > 0 && sb.charAt(sb.length() - 1) > ch) {
+                    // 此位置后还有的（后续还能让栈保持单调递增的就pop）
+                    if (charCnt[sb.charAt(sb.length() - 1) - 'a'] > 0) {
+                        existStack[sb.charAt(sb.length() - 1) - 'a'] = false;
+                        sb.deleteCharAt(sb.length() - 1);
+                    } else {
+                        break;
+                    }
+                }
+                existStack[ch - 'a'] = true;
+                sb.append(ch);
+            }
+            // source 字符串中 char 的计数减1
+            charCnt[ch - 'a']--;
+        }
+
+        return sb.toString();
+    }
+
+    public int lastRemaining(int n, int m) {
+        int x = 0;
+        for (int i = 2; i <= n; i++) {
+            x = (x + m) % i;
+        }
+        return x;
+    }
+
+    public int findPeakElement(int[] nums) {
+        int left=0,right=nums.length-1;
+        while (left<right){
+            int mid = left + (right - left) / 2;
+            if (nums[mid]>nums[mid+1]){
+                right = mid;
+            }else {
+                // 注意这里加1
+                left=mid+1;
+            }
+        }
+        return left;
     }
 }
