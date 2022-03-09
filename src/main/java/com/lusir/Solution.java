@@ -1620,16 +1620,36 @@ public class Solution {
     }
 
     public int findPeakElement(int[] nums) {
-        int left=0,right=nums.length-1;
-        while (left<right){
+        int left = 0, right = nums.length - 1;
+        while (left < right) {
             int mid = left + (right - left) / 2;
-            if (nums[mid]>nums[mid+1]){
+            if (nums[mid] > nums[mid + 1]) {
                 right = mid;
-            }else {
+            } else {
                 // 注意这里加1
-                left=mid+1;
+                left = mid + 1;
             }
         }
         return left;
+    }
+
+    public String largestNumber(int[] nums) {
+        // 从结果来看，从左到右，我们需要两两组合最终都达到，左大到右小的结果
+        // 左a,右b，我们还要看两两组合的效果，我们想要降的趋势，所以compare策略（小b+a比大a+b,此为升则全局小)
+        PriorityQueue<String> pq = new PriorityQueue<>((a, b) -> (b + a).compareTo(a + b));
+
+        for (int n : nums) {
+            pq.offer(String.valueOf(n));
+        }
+
+        String ans = "";
+        while (!pq.isEmpty()) {
+            ans += pq.poll();
+        }
+        // 去掉前导0
+        if (ans.charAt(0) == '0') {
+            return "0";
+        }
+        return ans;
     }
 }
