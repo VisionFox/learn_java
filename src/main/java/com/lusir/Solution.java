@@ -1652,4 +1652,101 @@ public class Solution {
         }
         return ans;
     }
+
+    long pre = Long.MIN_VALUE;
+
+    public boolean isValidBST(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+
+        if (!isValidBST(root.left)) {
+            return false;
+        }
+
+        if (root.val <= pre) {
+            return false;
+        }
+        pre = root.val;
+        return isValidBST(root.right);
+    }
+
+    public ListNode deleteDuplicates(ListNode head) {
+        if (head == null) {
+            return head;
+        }
+
+        ListNode cur = head;
+        while (cur.next != null) {
+            if (cur.val != cur.next.val) {
+                cur = cur.next;
+            } else {
+                cur.next = cur.next.next;
+            }
+        }
+        return head;
+    }
+
+    public String minWindow(String source, String target) {
+        int idxSource = 0, idxTarget = 0, minLen = Integer.MAX_VALUE;
+        int leftest = -1, right = 0;
+        while (idxSource < source.length()) {
+            if (source.charAt(idxSource) == target.charAt(idxTarget)) {
+                // 找到了一个包含target的子串（右边界为idxSource）
+                if (idxTarget == target.length() - 1) {
+                    // 此时的right指向右边界
+                    right = idxSource;
+                    // 我们又顺着右边界反向遍历
+                    // 直到找到（离右边界最近的）左边界
+                    while (idxTarget >= 0) {
+                        if (source.charAt(idxSource) == target.charAt(idxTarget)) {
+                            idxTarget--;
+                        }
+                        idxSource--;
+                    }
+                    // 因为上面的反向遍历结束时idxSource指向了左边界的前一位
+                    // ++idxSource之后此时idxSource就指向左边界
+                    idxSource++;
+
+                    if (right - idxSource + 1 < minLen) {
+                        minLen = right - idxSource + 1;
+                        leftest = idxSource;
+                    }
+                }
+                idxTarget++;
+            }
+            idxSource++;
+        }
+        return leftest == -1 ? "" : source.substring(leftest, leftest + minLen);
+    }
+
+    int max = Integer.MIN_VALUE;
+
+    public int maxPathSum(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        dfs(root);
+        return max;
+    }
+
+    /**
+     * 返回经过root的单边分支最大和， 即Math.max(root, root+left, root+right)
+     *
+     * @param root
+     * @return
+     */
+    public int dfs(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        //计算左边分支最大值，左边分支如果为负数还不如不选择
+        int leftMax = Math.max(0, dfs(root.left));
+        //计算右边分支最大值，右边分支如果为负数还不如不选择
+        int rightMax = Math.max(0, dfs(root.right));
+        //left->root->right 作为路径与已经计算过历史最大值做比较
+        max = Math.max(max, root.val + leftMax + rightMax);
+        // 返回经过root的单边最大分支给当前root的父节点计算使用
+        return root.val + Math.max(leftMax, rightMax);
+    }
 }
