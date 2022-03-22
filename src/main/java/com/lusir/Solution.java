@@ -3,6 +3,7 @@ package com.lusir;
 import com.alibaba.fastjson.JSON;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Solution {
     public int searchInsert(int[] nums, int target) {
@@ -1467,10 +1468,7 @@ public class Solution {
 
         int cnt = 0;
         for (int i = 0; i < flowerbed.length; i++) {
-            if (flowerbed[i] == 0 &&
-                    (i == 0 || flowerbed[i - 1] == 0) &&
-                    (i + 1 == flowerbed.length || flowerbed[i + 1] == 0)
-            ) {
+            if (flowerbed[i] == 0 && (i == 0 || flowerbed[i - 1] == 0) && (i + 1 == flowerbed.length || flowerbed[i + 1] == 0)) {
                 cnt++;
                 flowerbed[i] = 1;
             }
@@ -1748,5 +1746,280 @@ public class Solution {
         max = Math.max(max, root.val + leftMax + rightMax);
         // 返回经过root的单边最大分支给当前root的父节点计算使用
         return root.val + Math.max(leftMax, rightMax);
+    }
+
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        if (nums == null || nums.length == 0 || k <= 0) {
+            return new int[0];
+        }
+
+        Deque<Integer> deque = new LinkedList<>();
+        int[] ans = new int[nums.length - k + 1];
+        for (int idRight = 0, idxLeft = 1 - k; idRight < nums.length; idxLeft++, idRight++) {
+            // 删除 deque 中对应的 nums[idxLeft-1]
+            if (idxLeft > 0 && deque.peekFirst() == nums[idxLeft - 1]) {
+                deque.removeFirst();
+            }
+            // 保持 deque 递减
+            while (!deque.isEmpty() && deque.peekLast() < nums[idRight]) {
+                deque.removeLast();
+            }
+            deque.addLast(nums[idRight]);
+            // 记录窗口最大值
+            if (idxLeft >= 0) {
+                ans[idxLeft] = deque.peekFirst();
+            }
+        }
+        return ans;
+    }
+
+    public boolean isCompleteTree(TreeNode root) {
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        boolean reachNull = false;
+        while (!queue.isEmpty()) {
+            TreeNode cur = queue.poll();
+            if (cur == null) {
+                reachNull = true;
+                continue;
+            }
+
+            if (reachNull) {
+                return false;
+            }
+
+            queue.add(cur.left);
+            queue.add(cur.right);
+        }
+
+        return true;
+    }
+
+    public List<Integer> findClosestElements(int[] arr, int k, int x) {
+        List<Integer> ret = Arrays.stream(arr).boxed().collect(Collectors.toList());
+        int n = ret.size();
+        if (x <= ret.get(0)) {
+            return ret.subList(0, k);
+        } else if (ret.get(n - 1) <= x) {
+            return ret.subList(n - k, n);
+        } else {
+            int index = Collections.binarySearch(ret, x);
+            if (index < 0) index = -index - 1;
+            int low = Math.max(0, index - k), high = Math.min(ret.size() - 1, index + k - 1);
+
+            while (high - low > k - 1) {
+                if ((x - ret.get(low)) <= (ret.get(high) - x)) high--;
+                else if ((x - ret.get(low)) > (ret.get(high) - x)) low++;
+                else System.out.println("unhandled case: " + low + " " + high);
+            }
+            return ret.subList(low, high + 1);
+        }
+    }
+
+    public TreeNode deleteNode(TreeNode root, int key) {
+        if (root == null) return null;
+
+        if (key > root.val) root.right = deleteNode(root.right, key); // 去右子树删除
+
+        else if (key < root.val) root.left = deleteNode(root.left, key);  // 去左子树删除
+
+        else {  // 当前节点就是要删除的节点
+            if (root.left == null) return root.right;      // 情况1，欲删除节点无左子
+            else if (root.right == null) return root.left;  // 情况2，欲删除节点无右子
+            else if (root.left != null && root.right != null) {  // 情况3，欲删除节点左右子都有
+                TreeNode node = root.right;
+                while (node.left != null)      // 寻找欲删除节点右子树的最左节点
+                    node = node.left;
+
+                node.left = root.left;     // 将欲删除节点的左子树成为其右子树的最左节点的左子树
+                root = root.right;         // 欲删除节点的右子顶替其位置，节点被删除
+            }
+        }
+        return root;
+    }
+
+    static final int[][] DIRECTIONS = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+
+    public int trapRainWater(int[][] height) {
+        int m = height.length, n = height[0].length, res = 0;
+        Queue<int[]> queue = new PriorityQueue<>(Comparator.comparingInt(p -> height[p[0]][p[1]]));
+        boolean[][] visited = new boolean[m][n];
+        for (int i = 0; i < m; i++) {
+            queue.offer(new int[]{i, 0});
+            queue.offer(new int[]{i, n - 1});
+            visited[i][0] = visited[i][n - 1] = true;
+        }
+        for (int j = 1; j < n - 1; j++) {
+            queue.offer(new int[]{0, j});
+            queue.offer(new int[]{m - 1, j});
+            visited[0][j] = visited[m - 1][j] = true;
+        }
+        while (!queue.isEmpty()) {
+            int[] p = queue.poll();
+            int h = height[p[0]][p[1]];
+            for (int[] d : DIRECTIONS) {
+                int x = p[0] + d[0], y = p[1] + d[1];
+                if (x < 0 || x >= m || y < 0 || y >= n || visited[x][y]) continue;
+                if (h > height[x][y]) {
+                    res += h - height[x][y];
+                    height[x][y] = h;
+                }
+                queue.offer(new int[]{x, y});
+                visited[x][y] = true;
+            }
+        }
+        return res;
+    }
+
+
+    public int[][] spiralMatrixIII(int rows, int cols, int rStart, int cStart) {
+        int[][] around = new int[][]{{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+        int[][] ans = new int[rows * cols][2];
+
+        int x = rStart, y = cStart, num = 1, direct = 0;
+        int left = y - 1, right = y + 1, upper = x - 1, bottom = x + 1;
+
+        while (num <= rows * cols) {
+            // 符合要求的节点填入
+            if (x >= 0 && x < rows && y >= 0 && y < cols) {
+                ans[num - 1] = new int[]{x, y};
+                num++;
+            }
+
+            // 调整方向和边界坐标
+            if (direct == 0 && y == right) {
+                // 向右
+                direct++;
+                right++;
+
+            } else if (direct == 1 && x == bottom) {
+                // 向下
+                direct++;
+                bottom++;
+            } else if (direct == 2 && y == left) {
+                // 向左
+                direct++;
+                left--;
+            } else if (direct == 3 && x == upper) {
+                // 向上
+                direct = 0;
+                upper--;
+            }
+
+            // 下一个节点的坐标
+            x += around[direct][0];
+            y += around[direct][1];
+        }
+        return ans;
+    }
+
+    public boolean isMatch(String source, String patten) {
+        boolean[][] dp = new boolean[source.length() + 1][patten.length() + 1];
+
+        // 初始化
+        dp[0][0] = true;
+        for (int j = 1; j <= patten.length(); j++) {
+            // charAt(j - 1) ： j-1
+            dp[0][j] = dp[0][j - 1] && patten.charAt(j - 1) == '*';
+        }
+
+        for (int i = 1; i <= source.length(); i++) {
+            for (int j = 1; j <= patten.length(); j++) {
+                if (source.charAt(i - 1) == patten.charAt(j - 1) || patten.charAt(j - 1) == '?') {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else if (patten.charAt(j - 1) == '*') {
+                    // dp[i][j - 1] 表示 * 代表的是空字符，例如 ab, ab*
+                    // dp[i - 1][j] 表示 * 代表的是非空字符，例如 abcd, ab*
+                    dp[i][j] = dp[i][j - 1] || dp[i - 1][j];
+                }
+            }
+        }
+
+        return dp[source.length()][patten.length()];
+    }
+
+    public Stack<Integer> stackSort(Stack<Integer> sourceStack) {
+        Stack<Integer> tempStack = new Stack<>();
+        while (!sourceStack.isEmpty()) {
+            Integer peek = sourceStack.pop();
+            while (!tempStack.isEmpty() && tempStack.peek() > peek) {
+                Integer t = tempStack.pop();
+                sourceStack.push(t);
+            }
+            tempStack.push(peek);
+        }
+
+        return tempStack;
+    }
+
+    public int widthOfBinaryTree(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+
+        Queue<AnnotatedNode> queue = new ArrayDeque<>();
+        queue.add(new AnnotatedNode(root, 0, 0));
+        int curDepth = 0, left = 0, ans = 0;
+
+        while (!queue.isEmpty()) {
+            AnnotatedNode curAnnotatedNode = queue.poll();
+            if (curAnnotatedNode.node != null) {
+                queue.offer(new AnnotatedNode(curAnnotatedNode.node.left, curAnnotatedNode.depth + 1, curAnnotatedNode.pos * 2));
+                queue.offer(new AnnotatedNode(curAnnotatedNode.node.right, curAnnotatedNode.depth + 1, curAnnotatedNode.pos * 2));
+
+                if (curDepth != curAnnotatedNode.depth) {
+                    curDepth = curAnnotatedNode.depth;
+                    left = curAnnotatedNode.pos;
+                }
+                ans = Math.max(ans, curAnnotatedNode.pos - left + 1);
+            }
+        }
+        return ans;
+    }
+
+    public int findTargetSumWays(int[] nums, int target) {
+        int n = nums.length;
+
+        int absSum = 0;
+        for (int i : nums) {
+            absSum += Math.abs(i);
+        }
+
+        // 提前校验，根据实际，根据01背包问题转换而来
+        // 目标值大于absSum 或者 目标值+absSum为奇数的情况下 不符合条件
+        if (Math.abs(target) > absSum || (absSum + target) % 2 != 0) {
+            return 0;
+        }
+
+        // 问题转化
+        return subSum(nums, (absSum + target) / 2);
+    }
+
+    private int subSum(int[] nums, int sumA) {
+        // nums待选择的物品，sumA背包容量，求塞满背包的最多方案数
+        int n = nums.length;
+        int[][] dp = new int[n + 1][sumA + 1];
+
+        //背包容量为0的情况下，只有什么都不装这一种方法
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = 1;
+        }
+
+        for (int i = 1; i <= n; i++) {
+            // 第i个物品的下标为i-1
+            int num = nums[i - 1];
+            for (int j = 0; j <= sumA; j++) {
+                // 不把 nums[i] 算入子集（或者说不把这第 i 个物品装入背包）
+                // 恰好装满背包的方法数就取决于上一个状态 dp[i-1][j]
+                dp[i][j] = dp[i - 1][j];
+                // 把 nums[i] 算入子集（或者说你把这第 i 个物品装入了背包）
+                // 只要看前 i - 1 个物品有几种方法可以装满 j - nums[i-1] 的重量就行了
+                // 但又因为 num 全为正数，且背包容量没有负数的情况，j - nums[i-1] 要 >= 0
+                if (j >= num) {
+                    dp[i][j] += dp[i - 1][j - num];
+                }
+            }
+        }
+        return dp[n][sumA];
     }
 }
