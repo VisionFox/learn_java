@@ -2022,4 +2022,118 @@ public class Solution {
         }
         return dp[n][sumA];
     }
+
+    public List<List<Integer>> generate(int numRows) {
+        List<List<Integer>> res = new ArrayList<>();
+
+        for (int i = 0; i < numRows; i++) {
+            List<Integer> ans = new ArrayList<>();
+            for (int j = 0; j <= i; j++) {
+                if (j == 0 || j == i) {
+                    ans.add(1);
+                } else {
+                    Integer num1 = res.get(i - 1).get(j - 1);
+                    Integer num2 = res.get(i - 1).get(j);
+                    ans.add(num1 + num2);
+                }
+            }
+            res.add(ans);
+        }
+
+        return res;
+    }
+
+    private boolean[][] visited;
+
+    public boolean exist(char[][] board, String word) {
+        int row = board.length;
+        int col = board[0].length;
+        if (row * col < word.length()) {
+            return false;
+        }
+
+        visited = new boolean[row][col];
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < col; j++) {
+                if (dfs(board, word, 0, i, j)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean dfs(char[][] grid, String word, int index, int row, int col) {
+        // 遍历完了
+        if (index >= word.length()) {
+            return true;
+        }
+        // 遍历无效
+        if (row < 0 || row >= grid.length || col < 0 || col >= grid[0].length) {
+            return false;
+        }
+        // 本次探索中 遍历过了
+        if (visited[row][col]) {
+            return false;
+        }
+        // 本次探索的值不满足 ！！！
+        if (grid[row][col] != word.charAt(index)) {
+            return false;
+        }
+        // 标记下本次满足要求的探索
+        visited[row][col] = true;
+        // 探索上下左右 看看是否有满足要求的值
+        // 某个方向为false 即不满足 则找其他方向
+        boolean flag1 = dfs(grid, word, index + 1, row + 1, col);
+        if (flag1) {
+            return true;
+        }
+        boolean flag2 = dfs(grid, word, index + 1, row - 1, col);
+        if (flag2) {
+            return true;
+        }
+        boolean flag3 = dfs(grid, word, index + 1, row, col + 1);
+        if (flag3) {
+            return true;
+        }
+        boolean flag4 = dfs(grid, word, index + 1, row, col - 1);
+        if (flag4) {
+            return true;
+        }
+        // 取消遍历标记
+        visited[row][col] = false;
+        return false;
+    }
+
+    public int numDecodings(String s) {
+        if (s.charAt(0) == '0') {
+            return 0;
+        }
+
+        if (s.length()==1){
+            return 1;
+        }
+
+
+        int[] dp = new int[s.length()];
+        dp[0] = 1;
+
+
+        for (int i = 2; i < s.length(); i++) {
+            if (s.charAt(i) == '0') {
+                if (s.charAt(i - 1) == '1' || s.charAt(i - 1) == '2') {
+                    dp[i] = dp[i - 2];
+                } else {
+                    return 0;
+                }
+            } else if (s.charAt(i - 1) == '1') {
+                dp[i] = dp[i - 1] + dp[i - 2];
+            } else if (s.charAt(i - 1) == '2' && s.charAt(i) >= '1' && s.charAt(i) <= '6') {
+                dp[i] = dp[i - 1] + dp[i - 2];
+            } else {
+                return 0;
+            }
+        }
+        return dp[s.length() - 1];
+    }
 }
