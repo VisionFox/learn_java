@@ -2110,7 +2110,7 @@ public class Solution {
             return 0;
         }
 
-        if (s.length()==1){
+        if (s.length() == 1) {
             return 1;
         }
 
@@ -2135,5 +2135,54 @@ public class Solution {
             }
         }
         return dp[s.length() - 1];
+    }
+
+    public boolean verifyPostorder(int[] postorder) {
+        return recur(postorder, 0, postorder.length - 1);
+    }
+
+    private boolean recur(int[] postorder, int i, int j) {
+        if (i >= j) {
+            return true;
+        }
+
+        int flag = i;
+        while (postorder[flag] < postorder[j]) {
+            flag++;
+        }
+
+        int rightFirst = flag;
+
+        while (postorder[flag] > postorder[j]) {
+            flag++;
+        }
+
+        return flag == j && recur(postorder, i, rightFirst - 1) && recur(postorder, rightFirst, j - 1);
+    }
+
+    public boolean verifyPostorderV2(int[] postorder) {
+        // 单调栈使用，单调递增的单调栈，里面存的是递增的右子树的节点
+        // 遇到比栈顶小的，即为：局部左边子树第一个值，弹弹弹出，最终弹出为这两个局部树的root
+        Stack<Integer> stack = new Stack<>();
+        // 记录两个局部子树的根节点
+        // 这里可以把postorder的最后一个元素root看成无穷大节点的左孩子
+        int rootValue = Integer.MAX_VALUE;
+
+        // 从后往前遍历 root -> right -> left
+        for (int i = postorder.length - 1; i >= 0; i--) {
+            // 由于rootValue存的是余下子树的root
+            // 局部左子树元素必须要小于递增栈被peek访问的元素，否则就不是二叉搜索树
+            if (postorder[i] > rootValue) {
+                return false;
+            }
+            while (!stack.isEmpty() && postorder[i] < stack.peek()) {
+                // 数组元素小于单调栈的元素了，表示往左子树走了，记录根节点
+                // 找到这个左子树对应的根节点，之前右子树全部弹出，不再记录，因为不可能在往根节点的右子树走了
+                rootValue = stack.pop();
+            }
+            stack.push(postorder[i]);
+        }
+
+        return true;
     }
 }
