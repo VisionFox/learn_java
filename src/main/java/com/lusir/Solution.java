@@ -2185,4 +2185,50 @@ public class Solution {
 
         return true;
     }
+
+    public int climbStairs(int n) {
+        // 这个判断一定要有
+        if (n <= 2) {
+            return n;
+        }
+
+        int subOne = 1, subTwo = 1, ans = 0;
+        for (int i = 2; i <= n; i++) {
+            ans = subOne + subTwo;
+            subTwo = subOne;
+            subOne = ans;
+        }
+
+        return ans;
+    }
+
+    public int maxProfitV2(int[] prices) {
+        int days = prices.length;
+        int[][] dp = new int[days][2];
+        // base
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+
+        for (int i = 1; i < days; i++) {
+            dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1] + prices[i]);
+            if (i == 1) {
+                dp[i][1] = Math.max(dp[i - 1][1], dp[i - 1][0] - prices[i]);
+            } else {
+                dp[i][1] = Math.max(dp[i - 1][1], dp[i - 2][0] - prices[i]);
+            }
+        }
+        return dp[days - 1][0];
+    }
+
+    public int maxProfit(int[] prices, int fee) {
+        // -fee
+        int buy = -prices[0] - fee;
+        int sell = 0;
+        for (int i = 1; i < prices.length; i++) {
+            // -fee
+            buy = Math.max(buy, sell - prices[i] - fee);
+            sell = Math.max(sell, buy + prices[i]);
+        }
+        return sell;
+    }
 }
