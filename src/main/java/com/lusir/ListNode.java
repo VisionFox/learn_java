@@ -1,5 +1,7 @@
 package com.lusir;
 
+import java.util.Arrays;
+
 public class ListNode {
     int val;
     ListNode next;

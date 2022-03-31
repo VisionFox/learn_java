@@ -2231,4 +2231,169 @@ public class Solution {
         }
         return sell;
     }
+
+    public List<List<Integer>> threeSum(int[] nums) {
+        if (nums.length < 3) {
+            return Collections.emptyList();
+        }
+        Arrays.sort(nums);
+        if (nums[0] > 0) {
+            return Collections.emptyList();
+        }
+
+        List<List<Integer>> ans = new ArrayList<>();
+
+        for (int aIdx = 0; aIdx < nums.length - 2; aIdx++) {
+            if (nums[aIdx] > 0) {
+                break;
+            }
+
+            // aIdx永远指向第一个不同数字，bIdx cIdx同样指向第一个不一样的数
+            if (aIdx > 0 && nums[aIdx] == nums[aIdx - 1]) {
+                continue;
+            }
+
+            int bIdx = aIdx + 1;
+            int cIdx = nums.length - 1;
+
+            while (bIdx < cIdx) {
+                int sum = nums[aIdx] + nums[bIdx] + nums[cIdx];
+                if (sum == 0) {
+                    List<Integer> item = new ArrayList<>();
+                    item.add(nums[aIdx]);
+                    item.add(nums[bIdx]);
+                    item.add(nums[cIdx]);
+
+                    bIdx++;
+                    while (bIdx < cIdx && nums[bIdx] == nums[bIdx - 1]) {
+                        bIdx++;
+                    }
+
+                    cIdx--;
+                    while (bIdx < cIdx && nums[cIdx] == nums[cIdx + 1]) {
+                        cIdx--;
+                    }
+                } else if (sum < 0) {
+                    bIdx++;
+                    while (bIdx < cIdx && nums[bIdx] == nums[bIdx - 1]) {
+                        bIdx++;
+                    }
+                } else {
+                    cIdx--;
+                    while (bIdx < cIdx && nums[cIdx] == nums[cIdx + 1]) {
+                        cIdx--;
+                    }
+                }
+            }
+        }
+
+        return ans;
+    }
+
+    public int lengthOfLongestSubstringV2(String s) {
+        if (s == null) {
+            return 0;
+        }
+
+        if (s.length() < 2) {
+            return s.length();
+        }
+
+        HashMap<Character, Integer> charToCloseIdx = new HashMap<>();
+
+        int ans = 0;
+        int windowLeft = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char ch = s.charAt(i);
+            if (charToCloseIdx.containsKey(ch)) {
+                windowLeft = Math.max(windowLeft, charToCloseIdx.get(ch) + 1);
+            }
+            charToCloseIdx.put(ch, i);
+            ans = Math.max(ans, i - windowLeft + 1);
+        }
+        return ans;
+    }
+
+    public int lengthOfLongestSubstringTwoDistinct(String s) {
+        if (s.length() < 3) {
+            return s.length();
+        }
+
+        int left = 0, right = 0, ans = 2;
+        //K-V：K是对应字符，V是最后一次出现的位置。
+        HashMap<Character, Integer> map = new HashMap<>();
+
+        while (right < s.length()) {
+            char ch = s.charAt(right);
+            if (map.size() < 3) {
+                //符合要求就继续向右扩
+                map.put(ch, right);
+                right++;
+            }
+
+            if (map.size() == 3) {
+                int minCloseIdx = Collections.min(map.values());
+                map.remove(s.charAt(minCloseIdx));
+                left = minCloseIdx + 1;
+            }
+
+            ans = Math.max(ans, right - left);
+        }
+
+        return ans;
+    }
+
+    public boolean checkInclusion(String s1, String s2) {
+        int s1Len = s1.length();
+        int s2Len = s2.length();
+        if (s1Len < s2Len) {
+            return false;
+        }
+
+        int[] cnt_1 = new int[26];
+        int[] cnt_2 = new int[26];
+        for (int i = 0; i < s1Len; i++) {
+            cnt_1[s1.charAt(i) - 'a']++;
+            cnt_2[s2.charAt(i) - 'a']++;
+        }
+
+        if (Arrays.equals(cnt_1, cnt_2)) {
+            return true;
+        }
+
+        for (int i = s1Len; i < s2Len; i++) {
+            cnt_2[s2.charAt(i) - 'a']++;
+            cnt_2[s2.charAt(i - s1Len) - 'a']--;
+
+            if (Arrays.equals(cnt_1, cnt_2)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * pre[j] - pre[i-1] = k
+     * pre[j] - k = pre[i-1]
+     */
+    public int subarraySum(int[] nums, int k) {
+        HashMap<Integer, Integer> prefixSumCount = new HashMap<>();
+        prefixSumCount.put(0, 1);
+
+        int ans = 0;
+        int sum = 0;
+        for (int i = 0; i < nums.length; i++) {
+            sum += nums[i];
+            if (prefixSumCount.containsKey(sum - k)) {
+                ans += prefixSumCount.get(sum - k);
+            }
+
+
+            int cnt = prefixSumCount.getOrDefault(sum, 0);
+            prefixSumCount.put(sum, cnt + 1);
+        }
+
+        return ans;
+    }
 }
