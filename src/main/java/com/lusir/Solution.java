@@ -3,6 +3,7 @@ package com.lusir;
 import com.alibaba.fastjson.JSON;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Solution {
@@ -2394,6 +2395,91 @@ public class Solution {
             prefixSumCount.put(sum, cnt + 1);
         }
 
+        return ans;
+    }
+
+    public boolean hasPath(int[][] maze, int[] start, int[] dest) {
+        boolean[][] visited = new boolean[maze.length][maze[0].length];
+        Queue<int[]> queue = new LinkedList<>();
+        queue.add(start);
+        visited[start[0]][start[1]] = true;
+        int[][] dirs = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
+
+        while (queue.size() > 0) {
+            int[] pos = queue.poll();
+
+            if (pos[0] == dest[0] && pos[1] == dest[1]) {
+                return true;
+            }
+
+            for (int k = 0; k < dirs.length; ++k) {
+                // 一直往某方向走
+                int x = pos[0] + dirs[k][0];
+                int y = pos[1] + dirs[k][1];
+                while (x >= 0 && x < maze.length && y >= 0 && y < maze[0].length && maze[x][y] == 0) {
+                    x += dirs[k][0];
+                    y += dirs[k][1];
+                }
+                // 碰到墙壁就回退一下
+                x -= dirs[k][0];
+                y -= dirs[k][1];
+                // 记录此方向走到的方向终点，并放入 queue
+                if (!visited[x][y]) {
+                    queue.add(new int[]{x, y});
+                    visited[x][y] = true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public int maximalRectangle(char[][] matrix) {
+        if (matrix.length == 0) {
+            return 0;
+        }
+        int[] heights = new int[matrix[0].length];
+        int maxArea = 0;
+
+        for (int row = 0; row < matrix.length; row++) {
+            //遍历每一列，更新高度
+            for (int col = 0; col < matrix[0].length; col++) {
+                if (matrix[row][col] == '1') {
+                    heights[col] += 1;
+                } else {
+                    heights[col] = 0;
+                }
+            }
+            //调用上一题的解法，更新函数
+            maxArea = Math.max(maxArea, largestRectangleAreaV2(heights));
+        }
+
+        return maxArea;
+    }
+
+    public int largestRectangleAreaV2(int[] heights) {
+        if (heights == null || heights.length < 1) {
+            return 0;
+        }
+        // 单调递增，存下标
+        Stack<Integer> incrStack = new Stack<>();
+        // 首尾补0
+        int[] newHeights = new int[heights.length + 2];
+        System.arraycopy(heights, 0, newHeights, 1, heights.length);
+        int ans = 0;
+
+        for (int i = 0; i < newHeights.length; i++) {
+            while (!incrStack.isEmpty() && newHeights[i] < newHeights[incrStack.peek()]) {
+                int curIdx = incrStack.pop();
+                int curHeight = newHeights[curIdx];
+
+                int rightFirstMinIdx = i;
+                int leftFirstMinIdx = incrStack.peek();
+
+                int width = rightFirstMinIdx - 1 - leftFirstMinIdx;
+                ans = Math.max(ans, curHeight * width);
+            }
+            incrStack.push(i);
+        }
         return ans;
     }
 }
