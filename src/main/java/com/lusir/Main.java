@@ -1,11 +1,39 @@
 package com.lusir;
 
+import java.util.HashMap;
+
 public class Main {
     public static void main(String[] args) {
-        Solution s = new Solution();
-        int[][] b = new int[][]{{7,0},{4,4},{7,1},{5,0},{6,1},{5,2}};
-        System.out.println(s.reconstructQueue(b));
-        System.out.println(s.removeKdigits("10200",1));
-        System.out.println(s.minWindow("abcdebdde","bde"));
+        String[] s1 = new String[]{"aaa", "abc", "ababab", "abcab"};
+        for (int i = 0; i < s1.length; i++) {
+            System.out.println(s1[i]);
+            System.out.println(test(s1[i]));
+        }
+
+    }
+
+    public static boolean test(String str) {
+        if (str == null || str.length() <= 1) {
+            return false;
+        }
+
+        int len = str.length();
+
+        for (int i = 1; i <= len / 2; i++) {
+            String subStr = str.substring(0, i);
+            String lastStr = str.substring(i);
+            while (lastStr.length() > 0) {
+                if (!subStr.equals(lastStr.substring(0, i))) {
+                    break;
+                }
+
+                lastStr = lastStr.substring(i);
+                if (lastStr.substring(i).length() == 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

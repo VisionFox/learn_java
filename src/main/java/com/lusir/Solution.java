@@ -2482,4 +2482,55 @@ public class Solution {
         }
         return ans;
     }
+
+    public void permuteUnique() {
+        int[] arr = new int[]{1, 2, 3, 4};
+        boolean[] used = new boolean[arr.length];
+        permuteUniqueHelper(new ArrayList<>(), arr, new boolean[arr.length]);
+    }
+
+    private void permuteUniqueHelper(ArrayList<Integer> path, int[] arr, boolean[] used) {
+        if (path.size() == 2) {
+            System.out.println(path);
+            return;
+        }
+
+    }
+
+    public String longestPalindrome(String s) {
+        if (s == null || s.length() <= 1) {
+            return s;
+        }
+
+        char[] cs = s.toCharArray();
+        boolean[][] dp = new boolean[cs.length][cs.length];
+        for (int i = cs.length - 1; i >= 0; i--) {
+            dp[i][i] = true;
+            for (int j = cs.length - 1; j > i; j--) {
+                if (j == i + 1) {
+                    dp[i][j] = cs[j] == cs[i];
+                } else {
+                    dp[i][j] = cs[i] == cs[j] && dp[i + 1][j - 1];
+                }
+            }
+        }
+
+        int maxLen = -1;
+        int flag1 = -1;
+        int flag2 = -1;
+        for (int i = 0; i < dp.length; i++) {
+            for (int j = i; j < dp.length; j++) {
+                if (dp[i][j] == true) {
+                    int curLen = j - i + 1;
+                    if (curLen > maxLen) {
+                        flag1 = i;
+                        flag2 = j;
+                        maxLen = curLen;
+                    }
+                }
+            }
+        }
+
+        return s.substring(flag1, flag2 + 1);
+    }
 }

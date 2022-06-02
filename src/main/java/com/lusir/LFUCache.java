@@ -11,7 +11,7 @@ public class LFUCache {
     private HashMap<Integer, LinkedList<Node>> freqNodeListMap;
 
     public LFUCache(int capacity) {
-        this.cap = 0;
+        this.cap = capacity;
         this.minFreq = 0;
         this.keyNodeMap = new HashMap<>();
         this.freqNodeListMap = new HashMap<>();

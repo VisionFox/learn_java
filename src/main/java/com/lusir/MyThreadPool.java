@@ -1,7 +1,5 @@
 package com.lusir;
 
-import javafx.concurrent.Worker;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
