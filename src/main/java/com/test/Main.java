@@ -1,37 +1,32 @@
 package com.test;
 
 import java.util.ArrayList;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class Main {
+
+    private static int  x=0;
     public static void main(String[] args) throws InterruptedException {
-        new Main().test();
+        x=10;
+        x+=x-=x-x;
+        System.out.println(x);
     }
 
-    public void test() throws InterruptedException {
-        Object obj1 = new Object();
-        Object obj2 = new Object();
+    private volatile BlockingDeque<Integer> blockingDeque = new LinkedBlockingDeque<>();
 
-        new Thread(() -> {
-            synchronized (obj1) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                synchronized (obj2) {
-                    System.out.println("1");
-                }
-            }
-        }).start();
+    //消费者
+    public synchronized int consumer(){
+        if (blockingDeque.isEmpty()){
+            return -1;
+        }
 
-        new Thread(() -> {
-            synchronized (obj2) {
-                synchronized (obj1) {
-                    System.out.println("2");
-                }
-            }
-        }).start();
-
-        Thread.sleep(100000);
+        return this.blockingDeque.pollFirst();
     }
+
+    // 生产者
+    public synchronized void provider(int num){
+        this.blockingDeque.offer(num);
+    }
+
 }
