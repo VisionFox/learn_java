@@ -2533,4 +2533,42 @@ public class Solution {
 
         return s.substring(flag1, flag2 + 1);
     }
+
+    public boolean checkInclusionRe(String sub, String source) {
+        // 滑动窗口匹配
+        // 排除异常的边界情况，也限定了模式串的长度
+        if (sub.length() > source.length()) {
+            return false;
+        }
+
+
+        // 模式串的字典：可以看做一种频率分布
+        int[] subCntArr = new int[26];
+        // 动态更新的匹配窗口字典
+        int[] sourceWindowCntArr = new int[26];
+
+        int windowSize = sub.length();
+        // 构建字典
+        for (int i = 0; i < windowSize; i++) {
+            subCntArr[sub.charAt(i) - 'a']++;
+            sourceWindowCntArr[source.charAt(i) - 'a']++;
+        }
+
+        if (Arrays.equals(subCntArr, sourceWindowCntArr)) {
+            return true;
+        }
+
+        // 对于每一轮滑窗查询，如果两个字典相等(频率分布一致)，则命中
+        for (int i = sub.length(); i < source.length(); i++) {
+            // 滑动
+            sourceWindowCntArr[source.charAt(i) - 'a']++;
+            sourceWindowCntArr[source.charAt(i - windowSize) - 'a']--;
+
+            if (Arrays.equals(subCntArr, sourceWindowCntArr)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
