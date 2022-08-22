@@ -2571,4 +2571,115 @@ public class Solution {
 
         return false;
     }
+
+    public List<List<Integer>> permute(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return Collections.emptyList();
+        }
+
+        List<List<Integer>> ans = new ArrayList<>();
+        boolean[] used = new boolean[nums.length];
+        permuteHelper(nums, used, new ArrayList<>(), ans);
+        return ans;
+    }
+
+    private void permuteHelper(int[] nums, boolean[] used, ArrayList<Integer> path, List<List<Integer>> ans) {
+        if (path.size() == nums.length) {
+            ans.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+
+            used[i] = true;
+            path.add(nums[i]);
+
+            permuteHelper(nums, used, path, ans);
+
+            used[i] = false;
+            path.remove(path.size() - 1);
+        }
+    }
+
+    public List<List<Integer>> permuteUnique(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return Collections.emptyList();
+        }
+
+        // 元素要排序，主要是让相同的挨一起
+        Arrays.sort(nums);
+
+        List<List<Integer>> ans = new ArrayList<>();
+        boolean[] used = new boolean[nums.length];
+        permuteUniqueHelper(nums, used, new ArrayList<>(), ans);
+        return ans;
+    }
+
+    private void permuteUniqueHelper(int[] nums, boolean[] used, List<Integer> path, List<List<Integer>> ans) {
+        if (path.size() == nums.length) {
+            ans.add(new ArrayList<>(path));
+            return;
+        }
+
+        for (int i = 0; i < nums.length; i++) {
+            if (used[i]) {
+                continue;
+            }
+
+            if (i > 0 && nums[i] == nums[i - 1] && !used[i - 1]) {
+                continue;
+            }
+
+            path.add(nums[i]);
+            used[i] = true;
+
+            permuteUniqueHelper(nums, used, path, ans);
+
+            path.remove(path.size() - 1);
+            used[i] = false;
+        }
+    }
+
+    public boolean hasPathSum(TreeNode root, int targetSum) {
+        if (root == null) {
+            return false;
+        }
+
+        if (root.left == null && root.right == null) {
+            return root.val == targetSum;
+        }
+
+        return hasPathSum(root.left, targetSum - root.val) || hasPathSum(root.right, targetSum - root.val);
+    }
+
+    public String multiply(String num1, String num2) {
+        if ("0".equals(num1) || "0".equals(num2)) {
+            return "0";
+        }
+
+        int[] ans = new int[num2.length() + num1.length()];
+        for (int i = num1.length() - 1; i >= 0; i--) {
+            int n1 = num1.charAt(i) - '0';
+            for (int j = num2.length() - 1; j >= 0; j--) {
+                int n2 = num2.charAt(j) - '0';
+
+                int sum = (ans[i + j + 1] + n1 * n2);
+                ans[i + j + 1] = sum % 10;
+                ans[i + j] += sum / 10;
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < ans.length; i++) {
+            // 因为 N位数 * M位数 : 结果最多为N+M位 ，或者M+N-1位，想象xxx*1 vs xxx*9
+            if (i == 0 && ans[i] == 0) {
+                continue;
+            }
+            sb.append(ans[i]);
+        }
+        return sb.toString();
+    }
 }
