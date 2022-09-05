@@ -2682,4 +2682,64 @@ public class Solution {
         }
         return sb.toString();
     }
+
+    public int compareVersion(String v1, String v2) {
+        int i = 0, j = 0;
+        int m = v1.length(), n = v2.length();
+        while (i < m || j < n) {
+            int num1 = 0, num2 = 0;
+
+            while (i < m && v1.charAt(i) != '.') {
+                num1 = num1 * 10 + v1.charAt(i) - '0';
+                i++;
+            }
+
+            while (j < n && v2.charAt(j) != '.') {
+                num2 = num2 * 10 + v2.charAt(j) - '0';
+                j++;
+            }
+
+            if (num1 < num2) {
+                return -1;
+            } else if (num1 > num2) {
+                return 1;
+            }
+
+            i++;
+            j++;
+        }
+        return 0;
+    }
+
+    public int findMaxLength(int[] nums) {
+        if (nums == null || nums.length < 2) {
+            return 0;
+        }
+
+        int n = nums.length;
+
+        // 0当作-1 1当作1
+        // idx=0存0（保证01都出现）  idx=n存最后一个前缀和
+        int[] prefixSum = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
+            prefixSum[i] = prefixSum[i - 1] + ((nums[i - 1] == 0) ? -1 : 1);
+        }
+
+        int ans = 0;
+        Map<Integer, Integer> map = new HashMap<>();
+        map.put(0, 0);
+
+        for (int i = 1; i <= n; i++) {
+            int curSum = prefixSum[i];
+
+            if (map.containsKey(curSum)) {
+                ans = Math.max(ans, i - map.get(curSum));
+            }
+            if (!map.containsKey(curSum)) {
+                map.put(curSum, i);
+            }
+        }
+
+        return ans;
+    }
 }
