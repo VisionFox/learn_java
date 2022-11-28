@@ -20,14 +20,13 @@ public class Bigo {
     private boolean solution(char[] sChars, int sStart, char[] tChars, int tStart, Map<String, String> matchMap) {
         int sLessLen = sChars.length - sStart;
         int tLessLen = tChars.length - tStart;
-        if (tLessLen>sLessLen|| sLessLen%tLessLen!=0){
+        if (tLessLen > sLessLen || sLessLen % tLessLen != 0) {
             return false;
         }
 
-        if (sStart>=sChars.length){
+        if (sStart >= sChars.length) {
 
         }
-
 
 
         for (int i = 0; i < sChars.length; i++) {
