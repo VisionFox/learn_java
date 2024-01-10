@@ -1,6 +1,7 @@
 package com.lusir;
 
 import com.alibaba.fastjson.JSON;
+import com.test.Main;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -873,27 +874,31 @@ public class Solution {
         return max;
     }
 
+    // lc 84
     public int largestRectangleArea(int[] heights) {
-        int n = heights.length;
-        if (n == 0) {
+        // 特殊处理
+        if (heights == null || heights.length == 0) {
             return 0;
         }
-        if (n == 1) {
+        if (heights.length == 1) {
             return heights[0];
         }
-
-        int[] newHeights = new int[n + 2];
+        // 两边补0 为了清空栈
+        int[] newHeights = new int[heights.length + 2];
         int newLen = newHeights.length;
-        System.arraycopy(heights, 0, newHeights, 1, n);
+        System.arraycopy(heights, 0, newHeights, 1, heights.length);
+
         int maxArea = 0;
-        Stack<Integer> stack = new Stack<Integer>();
+        Stack<Integer> stack = new Stack<>();
+
         for (int i = 0; i < newLen; i++) {
             // 单调栈 非递减
             while (!stack.isEmpty() && newHeights[i] < newHeights[stack.peek()]) {
-                // stack pop 当前高度对应值
+                // stack pop 当前高度对应值-出栈的元素-高度
                 int currHeight = newHeights[stack.pop()];
-                // i为stack.pop 右侧 第一个比pop 小 的元素，pop后的stack.peek 为 stack.pop 左侧 第一个比pop 小 的元素
-                // 这时i和s.top()分别代表以该高度开始向右和向左第一个小于该高度的下标。
+                // i为stack.pop 右侧 第一个比pop 小 的元素，
+                // pop后的stack.peek 为 stack.pop 左侧 第一个比pop 小 的元素
+                // 这时i和s.top() 分别代表 以该高度开始向右和向左第一个小于该高度的下标。
                 int width = i - stack.peek() - 1;
                 maxArea = Math.max(maxArea, width * currHeight);
             }
@@ -2315,30 +2320,25 @@ public class Solution {
         return ans;
     }
 
+    // lc 159
     public int lengthOfLongestSubstringTwoDistinct(String s) {
         if (s.length() < 3) {
             return s.length();
         }
 
         int left = 0, right = 0, ans = 2;
-        //K-V：K是对应字符，V是最后一次出现的位置。
-        HashMap<Character, Integer> map = new HashMap<>();
-
-        while (right < s.length()) {
-            char ch = s.charAt(right);
-            if (map.size() < 3) {
-                //符合要求就继续向右扩
-                map.put(ch, right);
-                right++;
-            }
-
-            if (map.size() == 3) {
-                int minCloseIdx = Collections.min(map.values());
-                map.remove(s.charAt(minCloseIdx));
+        // K-V：K是对应字符，V是最后一次出现的位置
+        // 为了多挪动几个left
+        HashMap<Character, Integer> char2LastIdx = new HashMap<>();
+        for (; right < s.length(); right++) {
+            char2LastIdx.put(s.charAt(right), right);
+            if (char2LastIdx.size() > 2) {
+                // 反正只有2个元素，最小的肯定是：最早需要抛弃的
+                int minCloseIdx = Collections.min(char2LastIdx.values());
+                char2LastIdx.remove(s.charAt(minCloseIdx));
                 left = minCloseIdx + 1;
             }
-
-            ans = Math.max(ans, right - left);
+            ans = Math.max(ans, right - left + 1);
         }
 
         return ans;
@@ -2456,6 +2456,7 @@ public class Solution {
         return maxArea;
     }
 
+    // lc 84
     public int largestRectangleAreaV2(int[] heights) {
         if (heights == null || heights.length < 1) {
             return 0;
@@ -2655,10 +2656,12 @@ public class Solution {
         return hasPathSum(root.left, targetSum - root.val) || hasPathSum(root.right, targetSum - root.val);
     }
 
+    // lc 43
     public String multiply(String num1, String num2) {
         if ("0".equals(num1) || "0".equals(num2)) {
             return "0";
         }
+
 
         int[] ans = new int[num2.length() + num1.length()];
         for (int i = num1.length() - 1; i >= 0; i--) {
@@ -2666,11 +2669,13 @@ public class Solution {
             for (int j = num2.length() - 1; j >= 0; j--) {
                 int n2 = num2.charAt(j) - '0';
 
+
                 int sum = (ans[i + j + 1] + n1 * n2);
                 ans[i + j + 1] = sum % 10;
                 ans[i + j] += sum / 10;
             }
         }
+
 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < ans.length; i++) {
@@ -2742,4 +2747,424 @@ public class Solution {
 
         return ans;
     }
+
+    public int[] topKFrequent(int[] nums, int k) {
+        Map<Integer, Integer> num2Freq = new HashMap<>();
+        for (int n : nums) {
+            num2Freq.put(n, num2Freq.getOrDefault(n, 0) + 1);
+        }
+
+        // int[0] 数 int[1] 频率
+        // ps: A.compareTo(B) 等价于 A-B 升序排序
+        // 小顶堆
+        PriorityQueue<int[]> pQ = new PriorityQueue<>((pair1, pair2) -> pair1[1] - pair2[1]);
+
+        for (Map.Entry<Integer, Integer> entry : num2Freq.entrySet()) {
+            Integer num = entry.getValue();
+            Integer freq = entry.getValue();
+
+            // 判断是否满了k个
+            if (pQ.size() < k) {
+                pQ.offer(new int[]{entry.getKey(), entry.getValue()});
+            } else {
+                if (pQ.peek() != null && pQ.peek()[1] < freq) {
+                    pQ.poll();
+                    pQ.offer(new int[]{entry.getKey(), entry.getValue()});
+                }
+            }
+        }
+
+        int[] res = new int[k];
+        for (int i = 0; i < k; i++) {
+            res[i] = pQ.poll()[0];
+        }
+        return res;
+    }
+
+    public List<Integer> findAnagrams(String s, String p) {
+        if (p.length() > s.length()) {
+            return Collections.emptyList();
+        }
+
+        int sSize = s.length();
+        int pSize = p.length();
+        int[] sWindowCnt = new int[26];
+        int[] pCnt = new int[26];
+
+        for (int i = 0; i < pSize; i++) {
+            pCnt[p.charAt(i) - 'a']++;
+            sWindowCnt[s.charAt(i) - 'a']++;
+        }
+
+        List<Integer> res = new ArrayList<>();
+        if (Arrays.equals(pCnt, sWindowCnt)) {
+            res.add(0);
+        }
+
+        for (int i = pSize; i < sSize; i++) {
+            sWindowCnt[s.charAt(i) - 'a']++;
+            sWindowCnt[s.charAt(i - pSize) - 'a']--;
+            if (Arrays.equals(pCnt, sWindowCnt)) {
+                res.add(i - pSize + 1);
+            }
+        }
+
+        return res;
+    }
+
+    public List<Integer> findAnagramsV2(String s, String p) {
+        int sLen = s.length(), pLen = p.length();
+
+        if (sLen < pLen) {
+            return new ArrayList<Integer>();
+        }
+
+        List<Integer> ans = new ArrayList<Integer>();
+        int[] count = new int[26];
+        for (int i = 0; i < pLen; ++i) {
+            ++count[s.charAt(i) - 'a'];
+            --count[p.charAt(i) - 'a'];
+        }
+
+        int differ = 0;
+        for (int j = 0; j < 26; ++j) {
+            if (count[j] != 0) {
+                ++differ;
+            }
+        }
+
+        if (differ == 0) {
+            ans.add(0);
+        }
+
+        for (int i = 0; i < sLen - pLen; ++i) {
+            // 窗口左边移动处理 缩减字符
+            if (count[s.charAt(i) - 'a'] == 1) {  // 窗口中字母 s[i] 的数量与字符串 p 中的数量从不同变得相同
+                --differ;
+            } else if (count[s.charAt(i) - 'a'] == 0) {  // 窗口中字母 s[i] 的数量与字符串 p 中的数量从相同变得不同
+                ++differ;
+            }
+            --count[s.charAt(i) - 'a'];
+            // 窗口右边移动处理 新增字符
+            if (count[s.charAt(i + pLen) - 'a'] == -1) {  // 窗口中字母 s[i+pLen] 的数量与字符串 p 中的数量从不同变得相同
+                --differ;
+            } else if (count[s.charAt(i + pLen) - 'a'] == 0) {  // 窗口中字母 s[i+pLen] 的数量与字符串 p 中的数量从相同变得不同
+                ++differ;
+            }
+            ++count[s.charAt(i + pLen) - 'a'];
+
+            if (differ == 0) {
+                // ！！！此循环中的i代表上次窗口最新的left
+                ans.add(i + 1);
+            }
+        }
+
+        return ans;
+    }
+
+    public int minMeetingRooms(int[][] intervals, int n) {
+        if (intervals == null || intervals.length == 0) {
+            return 0;
+        }
+        // 按照会议开始时间来排序
+        Arrays.sort(intervals, (O1, O2) -> O1[0] - O2[0]);
+        // 会议结束时间的小顶堆，代表当前能同时开多少个会议 （存其结束时间）
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>((O1, O2) -> O1 - O2);
+
+        int res = 0;
+
+        for (int[] interval : intervals) {
+            int start = interval[0];
+            int end = interval[1];
+
+            while (!priorityQueue.isEmpty() && start >= priorityQueue.peek()) {
+                // 代表当前会议开始时间 大于等于 Queue中会议的结束时间
+                // 可以在peek会议结束后再开
+                // 删除掉已经结束的会议
+                priorityQueue.poll();
+            }
+            // 将当前会议的结束时间加入Queue
+            priorityQueue.offer(end);
+            res = Math.max(res, priorityQueue.size());
+        }
+        return res;
+    }
+
+    public int maxEvents(int[][] events) {
+        if (events == null || events.length == 0) {
+            return 0;
+        }
+
+        Arrays.sort(events, (e1, e2) -> e1[0] - e2[0]);
+        PriorityQueue<Integer> priorityQueue = new PriorityQueue<>((o1, o2) -> o1 - o2);
+        int curDay = 1;
+        int i = 0;
+        int res = 0;
+        while (i < events.length || !priorityQueue.isEmpty()) {
+            while (events[i][0] == curDay) {
+                priorityQueue.offer(events[i][1]);
+                i++;
+            }
+
+            while (events[i][1] < priorityQueue.peek() && !priorityQueue.isEmpty()) {
+                priorityQueue.poll();
+            }
+
+            if (!priorityQueue.isEmpty()) {
+                priorityQueue.poll();
+                res++;
+            }
+
+            curDay++;
+        }
+
+        return res;
+    }
+
+    public boolean canPartition(int[] nums) {
+        int len = nums.length;
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        if ((sum & 1) == 1) {
+            return false;
+        }
+
+        int target = sum / 2;
+        boolean[][] dp = new boolean[len][target + 1];
+
+        // 初始化成为 true 虽然不符合状态定义，但是从状态转移来说是完全可以的
+        dp[0][0] = true;
+
+        if (nums[0] <= target) {
+            dp[0][nums[0]] = true;
+        }
+        for (int i = 1; i < len; i++) {
+            for (int j = 0; j <= target; j++) {
+                dp[i][j] = dp[i - 1][j];
+                if (nums[i] <= j) {
+                    dp[i][j] = dp[i - 1][j] || dp[i - 1][j - nums[i]];
+                }
+            }
+
+            // 由于状态转移方程的特殊性，提前结束，可以认为是剪枝操作
+            if (dp[i][target]) {
+                return true;
+            }
+        }
+        return dp[len - 1][target];
+    }
+
+    // lc 505
+    public int shortDistance(int[][] maze, int[] start, int[] end) {
+        Queue<int[]> queue = new LinkedList<>();
+        queue.offer(start);
+
+        int[][] mind = new int[maze.length][maze[0].length];
+        for (int i = 0; i < maze.length; i++) {
+            Arrays.fill(mind[i], Integer.MAX_VALUE);
+        }
+        mind[start[0]][start[1]] = 0;
+        int[][] dirs = new int[][]{{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+        while (!queue.isEmpty()) {
+            int[] curNode = queue.poll();
+            // 上下左右
+            for (int[] dir : dirs) {
+                int curX = curNode[0];
+                int curY = curNode[1];
+                int step = mind[curNode[0]][curNode[1]];
+
+                // 每次都要一直走到头
+                while (curX >= 0 && curY >= 0 &&
+                        curX < maze.length && curY < maze[0].length &&
+                        maze[curX][curY] == 0) {
+                    curX += dir[0];
+                    curY += dir[1];
+                    step++;
+                }
+                // 碰壁返回一格
+                curX -= dir[0];
+                curY -= dir[1];
+                step--;
+                // 存最小值
+                if (step < mind[curX][curY]) {
+                    mind[curX][curY] = step;
+                    queue.offer(new int[]{curX, curY});
+                }
+            }
+        }
+
+        if (mind[end[0]][end[1]] == Integer.MAX_VALUE) {
+            return -1;
+        }
+        return mind[end[0]][end[1]];
+    }
+
+    // lc 567
+    public boolean checkInclusionV2(String subS1, String testS2) {
+        if (testS2.length() < subS1.length()) {
+            return false;
+        }
+
+        int[] subS1Cnt = new int[26];
+        int[] testS2Cnt = new int[26];
+        for (int i = 0; i < subS1.length(); i++) {
+            subS1Cnt[subS1.charAt(i) - 'a']++;
+            testS2Cnt[testS2.charAt(i) - 'a']++;
+        }
+
+        if (Arrays.equals(subS1Cnt, testS2Cnt)) {
+            return true;
+        }
+
+        for (int i = subS1.length(); i < testS2.length(); i++) {
+            testS2Cnt[testS2.charAt(i - subS1.length()) - 'a']--;
+            testS2Cnt[testS2.charAt(i) - 'a']++;
+
+            if (Arrays.equals(subS1Cnt, testS2Cnt)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // lc 75
+    public void sortColors(int[] nums) {
+        int p0 = 0, p2 = nums.length - 1;
+        for (int i = 0; i <= p2; i++) {
+            while (p2 >= i && nums[i] == 2) {
+                swap(nums, p2, i);
+                p2--;
+            }
+
+            if (nums[i] == 0) {
+                swap(nums, i, p0);
+                p0++;
+            }
+        }
+    }
+
+    // lc 134
+    public int canCompleteCircuit(int[] gas, int[] cost) {
+        int totalGas = 0;
+        int remainGas = 0;
+        int startIdx = 0;
+
+        for (int i = 0; i < gas.length; i++) {
+            // 计算下一个点i+1的情况
+            remainGas += gas[i] - cost[i];
+            totalGas += gas[i] - cost[i];
+            if (remainGas < 0) {
+                // 剩油用完，代表start只能走到i，下一次只能从i+1开始
+                startIdx = (i + 1) % gas.length;
+                remainGas = 0;
+                // totalGas无论正负不用补，走完可以看到是否欠油
+                // 如果可以走完，油总量可以补完
+            }
+        }
+
+        // 走完整个环的前提是gas的总量要大于cost的总量
+        // 即整圈下来油足够
+        if (totalGas < 0) {
+            return -1;
+        }
+
+        return startIdx;
+    }
+
+    // lc 456
+    public boolean find132pattern(int[] nums) {
+        if (nums == null || nums.length < 3) {
+            return false;
+        }
+
+        Stack<Integer> stack = new Stack<>();
+        int t2 = -1;
+        for (int t1 = nums.length - 1; t1 >= 0; t1--) {
+            if (t2 > -1 && nums[t2] > nums[t1]) {
+                return true;
+            }
+            while (!stack.isEmpty() && nums[stack.peek()] < nums[t1]) {
+                t2 = stack.pop();
+            }
+            stack.push(t1);
+        }
+
+        return false;
+    }
+
+    // lc 114. 二叉树展开为链表
+    public void flatten(TreeNode root) {
+        while (root != null) {
+            //左子树为 null，直接考虑下一个节点
+            if (root.left == null) {
+                root = root.right;
+            } else {
+                // 找左子树最右边的节点
+                TreeNode pre = root.left;
+                while (pre.right != null) {
+                    pre = pre.right;
+                }
+                //将原来的右子树接到左子树的最右边节点
+                pre.right = root.right;
+                // 将左子树插入到右子树的地方
+                root.right = root.left;
+                root.left = null;
+                // 考虑下一个节点
+                root = root.right;
+            }
+        }
+    }
+
+    // lc 55. 跳跃游戏
+    public boolean canJump(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return false;
+        }
+
+        int far = nums[0];
+        for (int i = 0; i < nums.length; i++) {
+            if (i <= far) {
+                // 走得到则更新最远距离
+                far = Math.max(far, nums[i] + i);
+                if (far >= nums.length - 1) {
+                    return true;
+                }
+            }
+            // 走不到则没机会更新最远距离
+        }
+        return false;
+    }
+
+    // lc 665. 非递减数列
+    public boolean checkPossibility(int[] nums) {
+        if (nums == null || nums.length < 2) {
+            return true;
+        }
+
+        boolean hasChance = nums[0] <= nums[1] ? true : false;
+
+        for (int i = 1; i < nums.length - 1; i++) {
+            if (nums[i + 1] < nums[i]) {
+                if (hasChance) {
+                    if (nums[i + 1] >= nums[i - 1]) {
+                        nums[i] = nums[i + 1];
+                    } else {
+                        nums[i + 1] = nums[i];
+                    }
+                    // !!!
+                    hasChance = false;
+                }else {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }
+
+
