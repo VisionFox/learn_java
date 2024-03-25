@@ -12,7 +12,6 @@ public class MyThreadPool {
     private BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
     // 线程管理列表 - 这个列表保存了所有线程对象的引用， 方便后续的管理
     private List<MyThreadWork> threadWorkers = new ArrayList<>();
-
     //execute方法
     public void execute(Runnable command) throws InterruptedException {
         if (threadWorkers.size() < maxWorkerCount) {

@@ -4,15 +4,17 @@ import java.util.HashMap;
 
 public class LRUCache {
     private int cap;
-    private int size;
     private HashMap<Integer, Node> cache;
     private Node cycleHead;
 
     public LRUCache(int capacity) {
         this.cache = new HashMap<>();
+
         this.cycleHead = new Node(0, 0);
+        this.cycleHead.next = this.cycleHead;
+        this.cycleHead.pre = this.cycleHead;
+
         this.cap = capacity;
-        this.size = 0;
     }
 
     public int get(int key) {
@@ -39,19 +41,22 @@ public class LRUCache {
         node.next.pre = node.pre;
 
         cache.remove(node.key);
-        size--;
     }
 
     private void add(Node node) {
-        if (size == cap) {
-            this.cache.remove(this.cycleHead.pre);
+        if (this.cache.size()== cap) {
+            // 只删 map 不删环有什么用
+            // this.cache.remove(this.cycleHead.pre);、
+            // ctm 忘记删环还有就是hashmap的 remove 和 自己写的 remove 太像了
+            remove(node.pre);
         }
 
         this.cache.put(node.key, node);
         node.next = this.cycleHead.next;
         node.pre = this.cycleHead;
+        // 少了新节点的next的 pre忘记处理
+        this.cycleHead.next.pre = node;
         this.cycleHead.next = node;
-        size++;
     }
 
     class Node {
@@ -61,8 +66,6 @@ public class LRUCache {
         public Node(int key, int value) {
             this.key = key;
             this.value = value;
-            this.pre = this;
-            this.next = this;
         }
     }
 }
