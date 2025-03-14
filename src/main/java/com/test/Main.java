@@ -13,6 +13,7 @@ public class Main {
 
     public static void main(String[] args) {
         PriorityQueue<Object> objects = new PriorityQueue<>();
+        System.out.printf("123");
     }
 
 
