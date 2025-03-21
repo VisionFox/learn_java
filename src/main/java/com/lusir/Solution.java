@@ -1,10 +1,8 @@
 package com.lusir;
 
 import com.alibaba.fastjson.JSON;
-import com.test.Main;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class Solution {
@@ -3157,13 +3155,25 @@ public class Solution {
                     }
                     // !!!
                     hasChance = false;
-                }else {
+                } else {
                     return false;
                 }
             }
         }
 
         return true;
+    }
+
+    public int findKthLargestV2EZ(int[] nums, int k) {
+        PriorityQueue<Integer> minHead = new PriorityQueue<>(nums.length, (a, b) -> a - b);
+        for (int i = 0; i < nums.length; i++) {
+            minHead.offer(nums[i]);
+        }
+
+        for (int i = 0; i < (nums.length - k); i++) {
+            minHead.poll();
+        }
+        return minHead.peek();
     }
 }
 
